@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#172b3c"><link rel="manifest" href="manifest.json">
+<title>ADVOCATE ULLASH | Digital Case Diary</title>
+<style>
+:root{--navy:#172b3c;--navy2:#213e53;--gold:#c7a15a;--bg:#f3f5f7;--ink:#18232d;--muted:#667582;--line:#e2e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:white;padding:22px max(18px,calc((100% - 1100px)/2));border-bottom:3px solid var(--gold)}
+.brand{display:flex;align-items:center;gap:13px}.mark{width:48px;height:48px;border:1px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold);font-size:26px}
+h1{font-size:20px;letter-spacing:.7px;margin:0;color:#f2d69d}header p{margin:3px 0 0;color:#d5dee5;font-size:13px}
+main{max-width:1100px;margin:22px auto;padding:0 16px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h2{font-size:20px;margin:0 0 14px}.btn{border:0;border-radius:9px;padding:11px 15px;background:var(--navy);color:white;font-weight:650;cursor:pointer}.btn.gold{background:var(--gold);color:#172b3c}.btn.light{background:#e9eef2;color:var(--navy)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+.stat,.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:0 2px 8px #12283b08}.stat small{color:var(--muted)}.stat strong{display:block;font-size:26px;margin-top:5px;color:var(--navy)}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--line);background:white;color:var(--navy);padding:9px 12px;border-radius:9px;cursor:pointer}.tab.active{background:var(--navy);color:white}
+.panel{margin-bottom:15px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}label{display:block;font-size:13px;color:#4b5b67;margin-bottom:5px}input,select,textarea{width:100%;padding:10px;border:1px solid #cfd8df;border-radius:8px;font:inherit;background:white}textarea{min-height:85px;resize:vertical}.full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--muted);font-weight:600}.empty{color:var(--muted);padding:22px;text-align:center}.case-title{font-weight:700;color:var(--navy)}.pill{display:inline-block;background:#f4ead7;color:#75531e;padding:3px 8px;border-radius:30px;font-size:12px}
+.note{font-size:12px;color:var(--muted);line-height:1.55}.hidden{display:none}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}main{margin:15px auto}.tablewrap{overflow:auto}h1{font-size:17px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="mark">⚖</div><div><h1>ADVOCATE ULLASH</h1><p>DIGITAL CASE DIARY · জজ কোর্ট, পাবনা</p></div></div></header>
+<main>
+<div class="toolbar"><div><h2>ড্যাশবোর্ড</h2><div class="note">ব্যক্তিগত কেস ম্যানেজমেন্টের প্রাথমিক প্রোটোটাইপ</div></div><button class="btn gold" onclick="showTab('new')">＋ নতুন মামলা</button></div>
+<div class="stats">
+ <div class="stat"><small>মোট মামলা</small><strong id="total">০</strong></div>
+ <div class="stat"><small>চলমান মামলা</small><strong id="active">০</strong></div>
+ <div class="stat"><small>আজকের তারিখ</small><strong id="today">০</strong></div>
+ <div class="stat"><small>নিষ্পত্তিকৃত</small><strong id="closed">০</strong></div>
+</div>
+<div class="tabs">
+ <button class="tab active" data-tab="list" onclick="showTab('list')">মামলার তালিকা</button>
+ <button class="tab" data-tab="new" onclick="showTab('new')">নতুন মামলা</button>
+ <button class="tab" data-tab="diary" onclick="showTab('diary')">দৈনিক ডায়েরি</button>
+</div>
+<section id="list" class="panel">
+ <div class="row"><h2>মামলার তালিকা</h2><input id="search" style="max-width:260px" placeholder="মামলা নং / পক্ষের নাম খুঁজুন" oninput="render()"></div>
+ <div class="tablewrap"><table><thead><tr><th>মামলা</th><th>পক্ষসমূহ</th><th>পরবর্তী তারিখ</th><th>অবস্থা</th><th>কাজ</th></tr></thead><tbody id="caseRows"></tbody></table></div>
+ <div class="note">এই ডেমোতে তথ্য এই ব্রাউজারের ডিভাইসেই থাকে। অনলাইন টিম-সিঙ্ক এখনো সংযুক্ত নয়।</div>
+</section>
+<section id="new" class="panel hidden">
+ <h2>নতুন মামলা এন্ট্রি</h2>
+ <form id="caseForm"><div class="formgrid">
+  <div><label>মামলা নম্বর *</label><input name="number" required placeholder="যেমন: দেওয়ানি ১২৩/২০২৬"></div>
+  <div><label>মামলার ধরন</label><select name="type"><option>দেওয়ানি</option><option>ফৌজদারি</option><option>পারিবারিক</option><option>আপিল</option><option>রিভিশন</option><option>অন্যান্য</option></select></div>
+  <div><label>আদালতের নাম</label><input name="court" placeholder="যেমন: সিনিয়র সহকারী জজ আদালত"></div>
+  <div><label>পরবর্তী তারিখ</label><input name="nextDate" type="date"></div>
+  <div><label>বাদী / আবেদনকারী</label><input name="plaintiff"></div>
+  <div><label>বিবাদী / প্রতিপক্ষ</label><input name="defendant"></div>
+  <div><label>মক্কেলের মোবাইল</label><input name="phone" inputmode="tel"></div>
+  <div><label>মামলার অবস্থা</label><select name="status"><option>চলমান</option><option>নিষ্পত্তিকৃত</option><option>স্থগিত</option></select></div>
+  <div class="full"><label>সংক্ষিপ্ত নোট</label><textarea name="note" placeholder="মামলার গুরুত্বপূর্ণ তথ্য"></textarea></div>
+ </div><div class="actions"><button class="btn" type="submit">মামলা সংরক্ষণ</button><button class="btn light" type="reset">ফর্ম মুছুন</button></div></form>
+</section>
+<section id="diary" class="panel hidden">
+ <h2>দৈনিক কেস ডায়েরি</h2>
+ <form id="diaryForm"><div class="formgrid">
+  <div><label>মামলা নির্বাচন</label><select name="caseId" id="diaryCase" required></select></div>
+  <div><label>তারিখ</label><input name="date" type="date" required></div>
+  <div><label>কার্যক্রম / আদেশ</label><textarea class="full" name="entry" required placeholder="আজ আদালতে কী কার্যক্রম হয়েছে লিখুন"></textarea></div>
+ </div><div class="actions"><button class="btn" type="submit">ডায়েরি সংরক্ষণ</button></div></form>
+ <div id="diaryRows"></div>
+</section>
+<div class="panel"><strong>পরবর্তী উন্নয়ন</strong><p class="note">নিরাপদ লগইন, Admin ও ১–২ জন Assistant-এর আলাদা অ্যাকাউন্ট, ক্লাউড ডেটাবেজ, ফাইল আপলোড, ব্যাকআপ এবং তারিখের নোটিফিকেশন যুক্ত করতে হবে। বাস্তব মক্কেল/মামলার তথ্য এই ডেমোতে দেবেন না।</p></div>
+</main>
+<script>
+const load=(k,d)=>JSON.parse(localStorage.getItem(k)||JSON.stringify(d));
+let cases=load('au_cases',[]), diary=load('au_diary',[]);
+const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+function save(){localStorage.setItem('au_cases',JSON.stringify(cases));localStorage.setItem('au_diary',JSON.stringify(diary));render()}
+function showTab(t){document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));document.getElementById(t).classList.remove('hidden');document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));}
+function render(){
+ const q=(document.getElementById('search')?.value||'').toLowerCase();
+ document.getElementById('total').textContent=bn(cases.length);
+ document.getElementById('active').textContent=bn(cases.filter(c=>c.status==='চলমান').length);
+ document.getElementById('closed').textContent=bn(cases.filter(c=>c.status==='নিষ্পত্তিকৃত').length);
+ const today=new Date().toISOString().slice(0,10);
+ document.getElementById('today').textContent=bn(cases.filter(c=>c.nextDate===today).length);
+ const rows=cases.filter(c=>(c.number+' '+c.plaintiff+' '+c.defendant).toLowerCase().includes(q));
+ document.getElementById('caseRows').innerHTML=rows.length?rows.map(c=>`<tr><td><div class="case-title">${esc(c.number)}</div><small>${esc(c.type)} · ${esc(c.court||'আদালত উল্লেখ নেই')}</small></td><td>${esc(c.plaintiff||'—')} বনাম ${esc(c.defendant||'—')}</td><td>${esc(c.nextDate||'নির্ধারিত নয়')}</td><td><span class="pill">${esc(c.status)}</span></td><td><button class="btn light" onclick="removeCase('${c.id}')">মুছুন</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty">এখনো কোনো মামলা যোগ করা হয়নি</td></tr>';
+ const sel=document.getElementById('diaryCase');sel.innerHTML=cases.map(c=>`<option value="${c.id}">${esc(c.number)}</option>`).join('');
+ document.getElementById('diaryRows').innerHTML=diary.slice().reverse().map(d=>`<div class="panel"><b>${esc(cases.find(c=>c.id===d.caseId)?.number||'মুছে ফেলা মামলা')}</b><div class="note">${esc(d.date)}</div><p>${esc(d.entry)}</p></div>`).join('')||'<p class="empty">এখনো কোনো ডায়েরি এন্ট্রি নেই</p>';
+}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function removeCase(id){if(confirm('মামলাটি মুছে ফেলবেন?')){cases=cases.filter(c=>c.id!==id);save()}}
+document.getElementById('caseForm').addEventListener('submit',e=>{e.preventDefault();const o=Object.fromEntries(new FormData(e.target));cases.push({...o,id:crypto.randomUUID()});e.target.reset();save();showTab('list')});
+document.getElementById('diaryForm').addEventListener('submit',e=>{e.preventDefault();const o=Object.fromEntries(new FormData(e.target));diary.push(o);e.target.reset();save();showTab('diary')});
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
